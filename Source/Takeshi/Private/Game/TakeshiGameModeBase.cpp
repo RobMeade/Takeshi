@@ -1,10 +1,13 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Rob Meade & Ethan Mitchell.  All Rights Reserved.
 
-#include "TakeshiGameMode.h"
-#include "TakeshiCharacter.h"
+#include "Game/TakeshiGameModeBase.h"
+
 #include "UObject/ConstructorHelpers.h"
 
-ATakeshiGameMode::ATakeshiGameMode()
+#include "Character/TakeshiCharacterBase.h"
+
+
+ATakeshiGameModeBase::ATakeshiGameModeBase()
 {
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Assets/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
