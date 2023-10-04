@@ -6,6 +6,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Character/TakeshiCharacterBase.h"
 
 
 ATakeshiPlayerController::ATakeshiPlayerController()
@@ -41,6 +42,18 @@ void ATakeshiPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ATakeshiPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ATakeshiPlayerController::StopJumping);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATakeshiPlayerController::Look);
+}
+
+void ATakeshiPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (InPawn != nullptr)
+	{
+		ATakeshiCharacterBase* TakeshiCharacterBase = CastChecked<ATakeshiCharacterBase>(InPawn);
+
+		TakeshiCharacterBase->OnCharacterReactToHazard.AddDynamic(this, &ATakeshiPlayerController::ReactToHazard);
+	}
 }
 
 void ATakeshiPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -84,4 +97,9 @@ void ATakeshiPlayerController::Look(const FInputActionValue& InputActionValue)
 		ControlledPawn->AddControllerYawInput(LookAxisVector.X);
 		ControlledPawn->AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void ATakeshiPlayerController::ReactToHazard()
+{
+	OnControllerReactToHazard.Broadcast();
 }

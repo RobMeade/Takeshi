@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "CoreMinimal.h"
+#include "Interaction/ReactToHazardInterface.h"
 
 #include "TakeshiCharacterBase.generated.h"
 
@@ -14,8 +15,12 @@ class UCameraComponent;
 class USpringArmComponent;
 
 
+// Delegate Declarations
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterReactToHazardSignature);
+
+
 UCLASS(config=Game)
-class ATakeshiCharacterBase : public ACharacter
+class ATakeshiCharacterBase : public ACharacter, public IReactToHazardInterface
 {
 	GENERATED_BODY()
 
@@ -24,8 +29,13 @@ public:
 
 	ATakeshiCharacterBase();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnCharacterReactToHazardSignature OnCharacterReactToHazard;
+
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
+	virtual void ReactToHazard() override;
 
 
 protected:

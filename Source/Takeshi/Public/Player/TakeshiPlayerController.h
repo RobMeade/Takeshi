@@ -14,6 +14,10 @@ class UInputMappingContext;
 struct FInputActionValue;
 
 
+// Delegate Declarations
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerReactToHazardSignature);
+
+
 UCLASS()
 class TAKESHI_API ATakeshiPlayerController : public APlayerController
 {
@@ -24,11 +28,15 @@ public:
 
 	ATakeshiPlayerController();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnControllerReactToHazardSignature OnControllerReactToHazard;
+
 
 protected:
 
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 
 private:
@@ -49,4 +57,7 @@ private:
 	void Jump(const FInputActionValue& InputActionValue);
 	void StopJumping(const FInputActionValue& InputActionValue);
 	void Look(const FInputActionValue& InputActionValue);
+
+	UFUNCTION()
+	void ReactToHazard();
 };

@@ -34,3 +34,8 @@ ATakeshiCharacterBase::ATakeshiCharacterBase()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 }
+
+void ATakeshiCharacterBase::ReactToHazard()
+{
+	OnCharacterReactToHazard.Broadcast();
+}
