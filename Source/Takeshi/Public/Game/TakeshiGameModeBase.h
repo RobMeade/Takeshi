@@ -8,7 +8,7 @@
 #include "TakeshiGameModeBase.generated.h"
 
 
-UCLASS(minimalapi)
+UCLASS(minimalapi, Abstract)
 class ATakeshiGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
@@ -23,10 +23,11 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	virtual void ReactToHazard();
+
 
 private:
 
-	UFUNCTION()
-	void ReactToHazard();
 
 };

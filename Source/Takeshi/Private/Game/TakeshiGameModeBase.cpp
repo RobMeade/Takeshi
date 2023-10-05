@@ -27,5 +27,5 @@ void ATakeshiGameModeBase::BeginPlay()
 
 void ATakeshiGameModeBase::ReactToHazard()
 {
-	UE_LOG(LogTemp, Warning, TEXT("I am reacting to a hazard, here, lose a life"));
+	UE_LOG(LogTemp, Warning, TEXT("I am reacting to a hazard"));
 }
