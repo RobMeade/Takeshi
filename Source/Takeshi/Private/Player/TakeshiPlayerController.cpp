@@ -3,22 +3,28 @@
 #include "Player/TakeshiPlayerController.h"
 
 #include "GameFramework/Character.h"
-
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+
 #include "Character/TakeshiCharacterBase.h"
+#include "Player/TakeshiPlayerState.h"
 
 
 ATakeshiPlayerController::ATakeshiPlayerController()
 {
-	// bReplicates = true;
+	bReplicates = true;
 }
 
 void ATakeshiPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	TakeshiPlayerState = GetPlayerState<ATakeshiPlayerState>();
+
+	check(TakeshiPlayerState);
 	check(TakeshiContext);
+
+	TakeshiPlayerState->OnPlayerLivesChanged.AddDynamic(this, &ATakeshiPlayerController::PlayerLivesChanged);
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if (Subsystem)
@@ -30,6 +36,8 @@ void ATakeshiPlayerController::BeginPlay()
 
 	const FInputModeGameOnly InputModeData;
 	SetInputMode(InputModeData);
+
+	OnInitialized.Broadcast();
 }
 
 void ATakeshiPlayerController::SetupInputComponent()
@@ -52,7 +60,7 @@ void ATakeshiPlayerController::OnPossess(APawn* InPawn)
 	{
 		ATakeshiCharacterBase* TakeshiCharacterBase = CastChecked<ATakeshiCharacterBase>(InPawn);
 
-		TakeshiCharacterBase->OnCharacterReactToHazard.AddDynamic(this, &ATakeshiPlayerController::ReactToHazard);
+		TakeshiCharacterBase->OnReactToHazard.AddDynamic(this, &ATakeshiPlayerController::ReactToHazard);
 	}
 }
 
@@ -99,7 +107,22 @@ void ATakeshiPlayerController::Look(const FInputActionValue& InputActionValue)
 	}
 }
 
+void ATakeshiPlayerController::InitialisePlayerLives(const int32 InPlayerLives)
+{
+	TakeshiPlayerState->InitialisePlayerLives(InPlayerLives);
+}
+
+void ATakeshiPlayerController::DecrementPlayerLives() const
+{
+	TakeshiPlayerState->DecrementPlayerLives();
+}
+
+void ATakeshiPlayerController::PlayerLivesChanged(int32 NewPlayerLives)
+{
+	OnPlayerLivesChanged.Broadcast(NewPlayerLives);
+}
+
 void ATakeshiPlayerController::ReactToHazard()
 {
-	OnControllerReactToHazard.Broadcast();
+	OnReactToHazard.Broadcast();
 }

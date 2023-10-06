@@ -13,9 +13,13 @@ class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
 
+class ATakeshiPlayerState;
+
 
 // Delegate Declarations
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerInitializedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerReactToHazardSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnControllerPlayerLivesChangedSignature, int32, NewPlayerLives);
 
 
 UCLASS()
@@ -28,8 +32,17 @@ public:
 
 	ATakeshiPlayerController();
 
+	UPROPERTY()
+	FOnControllerInitializedSignature OnInitialized;
+
 	UPROPERTY(BlueprintAssignable)
-	FOnControllerReactToHazardSignature OnControllerReactToHazard;
+	FOnControllerReactToHazardSignature OnReactToHazard;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnControllerPlayerLivesChangedSignature OnPlayerLivesChanged;
+
+	void InitialisePlayerLives(const int32 InPlayerLives);
+	void DecrementPlayerLives() const;
 
 
 protected:
@@ -40,6 +53,17 @@ protected:
 
 
 private:
+
+	void Move(const FInputActionValue& InputActionValue);
+	void Jump(const FInputActionValue& InputActionValue);
+	void StopJumping(const FInputActionValue& InputActionValue);
+	void Look(const FInputActionValue& InputActionValue);
+
+	UFUNCTION()
+	void PlayerLivesChanged(int32 NewPlayerLives);
+
+	UFUNCTION()
+	void ReactToHazard();
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> TakeshiContext;
@@ -53,11 +77,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> LookAction;
 
-	void Move(const FInputActionValue& InputActionValue);
-	void Jump(const FInputActionValue& InputActionValue);
-	void StopJumping(const FInputActionValue& InputActionValue);
-	void Look(const FInputActionValue& InputActionValue);
+	UPROPERTY()
+	ATakeshiPlayerState* TakeshiPlayerState = nullptr;
 
-	UFUNCTION()
-	void ReactToHazard();
 };

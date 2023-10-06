@@ -17,7 +17,7 @@ void ATakeshiGameModeBase::BeginPlay()
 
 	if (TakeshiPlayerController != nullptr)
 	{
-		TakeshiPlayerController->OnControllerReactToHazard.AddDynamic(this, &ATakeshiGameModeBase::ReactToHazard);
+		TakeshiPlayerController->OnReactToHazard.AddDynamic(this, &ATakeshiGameModeBase::ReactToHazard);
 	}
 	else
 	{
@@ -27,5 +27,5 @@ void ATakeshiGameModeBase::BeginPlay()
 
 void ATakeshiGameModeBase::ReactToHazard()
 {
-	UE_LOG(LogTemp, Warning, TEXT("I am reacting to a hazard"));
+	// Note: Deliberate left empty, overriden in derived classes
 }

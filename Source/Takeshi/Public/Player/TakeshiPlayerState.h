@@ -8,6 +8,10 @@
 #include "TakeshiPlayerState.generated.h"
 
 
+// Delegate Declarations
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerLivesChangedSignature, int32, NewPlayerLives);
+
+
 UCLASS()
 class TAKESHI_API ATakeshiPlayerState : public APlayerState
 {
@@ -16,11 +20,14 @@ class TAKESHI_API ATakeshiPlayerState : public APlayerState
 
 public:
 
-	UFUNCTION(BlueprintPure)
-	int32 GetPlayerLives() const;
+	UFUNCTION(BlueprintCallable)
+	void InitialisePlayerLives(const int32 InPlayerLives);
 
 	UFUNCTION(BlueprintCallable)
-	void SetPlayerLives(const int32 Lives);
+	void DecrementPlayerLives();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerLivesChangedSignature OnPlayerLivesChanged;
 
 
 protected:
@@ -30,5 +37,5 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Core")
 	int32 PlayerLives = 0;
-	
+
 };

@@ -3,12 +3,20 @@
 #include "Player/TakeshiPlayerState.h"
 
 
-int32 ATakeshiPlayerState::GetPlayerLives() const
+void ATakeshiPlayerState::InitialisePlayerLives(const int32 InPlayerLives)
 {
-	return PlayerLives;
+	PlayerLives = InPlayerLives;
+
+	if (PlayerLives < 0) { PlayerLives = 0; }
+
+	OnPlayerLivesChanged.Broadcast(PlayerLives);
 }
 
-void ATakeshiPlayerState::SetPlayerLives(const int32 Lives)
+void ATakeshiPlayerState::DecrementPlayerLives()
 {
-	PlayerLives = Lives;
+	PlayerLives--;
+
+	if (PlayerLives < 0) { PlayerLives = 0; }
+
+	OnPlayerLivesChanged.Broadcast(PlayerLives);
 }

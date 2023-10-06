@@ -37,5 +37,5 @@ ATakeshiCharacterBase::ATakeshiCharacterBase()
 
 void ATakeshiCharacterBase::ReactToHazard()
 {
-	OnCharacterReactToHazard.Broadcast();
+	OnReactToHazard.Broadcast();
 }

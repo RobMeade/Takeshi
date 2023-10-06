@@ -3,8 +3,8 @@
 #pragma once
 
 #include "GameFramework/Character.h"
-#include "Logging/LogMacros.h"
 #include "CoreMinimal.h"
+
 #include "Interaction/ReactToHazardInterface.h"
 
 #include "TakeshiCharacterBase.generated.h"
@@ -30,7 +30,7 @@ public:
 	ATakeshiCharacterBase();
 
 	UPROPERTY(BlueprintAssignable)
-	FOnCharacterReactToHazardSignature OnCharacterReactToHazard;
+	FOnCharacterReactToHazardSignature OnReactToHazard;
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -48,4 +48,5 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
 };
