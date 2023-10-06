@@ -8,10 +8,6 @@
 #include "SkippingStonesGameMode.generated.h"
 
 
-// Forward Declarations
-class ATakeshiPlayerController;
-
-
 UCLASS()
 class TAKESHI_API ASkippingStonesGameMode : public ATakeshiGameModeBase
 {
@@ -24,20 +20,13 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void PlayerControllerInitialized() override;
 	virtual void ReactToHazard() override;
+	virtual void PlayerLivesChanged(int32 NewPlayerLives) override;
+	virtual void PlayerEnteredCourseEndZone() override;
 
 
 private:
 
-	void BindDelegates();
-
-	UFUNCTION()
-	void PlayerControllerInitialized();
-
-	UFUNCTION()
-	void PlayerLivesChanged(int32 NewPlayerLives);
-
-	UPROPERTY()
-	ATakeshiPlayerController* TakeshiPlayerController = nullptr;
 	
 };
