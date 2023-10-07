@@ -40,6 +40,8 @@ public:
 
 protected:
 
+	virtual void Destroyed() override;
+
 
 private:
 

@@ -60,7 +60,7 @@ void ATakeshiPlayerController::OnPossess(APawn* InPawn)
 	{
 		ATakeshiCharacterBase* TakeshiCharacterBase = CastChecked<ATakeshiCharacterBase>(InPawn);
 
-		TakeshiCharacterBase->OnReactToHazard.AddDynamic(this, &ATakeshiPlayerController::ReactToHazard);
+		TakeshiCharacterBase->OnReactToHazard.AddDynamic(this, &ATakeshiPlayerController::ReactToHazard);			
 	}
 }
 

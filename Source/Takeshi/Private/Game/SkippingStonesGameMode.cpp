@@ -29,6 +29,12 @@ void ASkippingStonesGameMode::PlayerLivesChanged(int32 NewPlayerLives)
 {
 	Super::PlayerLivesChanged(NewPlayerLives);
 
+	if (NewPlayerLives > 0 && NewPlayerLives < 3)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Respawning Player Character"));
+		RestartPlayer(TakeshiPlayerController);
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("Player Lives Remaining: %d"), NewPlayerLives);
 
 	if (NewPlayerLives == 0)
@@ -40,6 +46,4 @@ void ASkippingStonesGameMode::PlayerLivesChanged(int32 NewPlayerLives)
 void ASkippingStonesGameMode::PlayerEnteredCourseEndZone()
 {
 	Super::PlayerEnteredCourseEndZone();
-
-	UE_LOG(LogTemp, Warning, TEXT("Custom Game Mode Behaviour Called From Here"));
 }
