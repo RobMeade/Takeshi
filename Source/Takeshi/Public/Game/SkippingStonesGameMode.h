@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "Game/TakeshiGameModeBase.h"
+#include "Game/CourseGameModeBase.h"
 #include "CoreMinimal.h"
 
 #include "SkippingStonesGameMode.generated.h"
 
 
 UCLASS()
-class TAKESHI_API ASkippingStonesGameMode : public ATakeshiGameModeBase
+class TAKESHI_API ASkippingStonesGameMode : public ACourseGameModeBase
 {
 	GENERATED_BODY()
 

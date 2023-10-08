@@ -14,8 +14,7 @@ void ASkippingStonesGameMode::PlayerControllerInitialized()
 {
 	Super::PlayerControllerInitialized();
 
-	// TODO: Set lives to be a configuration variable for the GameMode
-	TakeshiPlayerController->InitialisePlayerLives(3);
+	TakeshiPlayerController->InitializePlayerLives(InitialPlayerLives);
 }
 
 void ASkippingStonesGameMode::ReactToHazard()
@@ -29,7 +28,7 @@ void ASkippingStonesGameMode::PlayerLivesChanged(int32 NewPlayerLives)
 {
 	Super::PlayerLivesChanged(NewPlayerLives);
 
-	if (NewPlayerLives > 0 && NewPlayerLives < 3)
+	if (NewPlayerLives > 0 && NewPlayerLives < InitialPlayerLives)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Respawning Player Character"));
 		RestartPlayer(TakeshiPlayerController);

@@ -4,6 +4,7 @@
 
 #include "GameFramework/PlayerController.h"
 #include "CoreMinimal.h"
+#include "UI/MainMenuUserWidget.h"
 
 #include "TakeshiPlayerController.generated.h"
 
@@ -13,11 +14,14 @@ class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
 
+class ATakeshiCharacterBase;
 class ATakeshiPlayerState;
 
 
 // Delegate Declarations
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerInitializedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerHasBegunPlaySignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerMainMenuPlayButtonClickedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerMainMenuQuitButtonClickedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerReactToHazardSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnControllerPlayerLivesChangedSignature, int32, NewPlayerLives);
 
@@ -33,7 +37,7 @@ public:
 	ATakeshiPlayerController();
 
 	UPROPERTY()
-	FOnControllerInitializedSignature OnInitialized;
+	FOnControllerHasBegunPlaySignature OnHasBegunPlay;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnControllerReactToHazardSignature OnReactToHazard;
@@ -41,7 +45,16 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnControllerPlayerLivesChangedSignature OnPlayerLivesChanged;
 
-	void InitialisePlayerLives(const int32 InPlayerLives);
+	UPROPERTY(BlueprintAssignable)
+	FOnControllerMainMenuPlayButtonClickedSignature OnMainMenuPlayButtonClicked;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnControllerMainMenuQuitButtonClickedSignature OnMainMenuQuitButtonClicked;
+
+	void InitializeForMainMenu();
+	void InitializeForGame();
+
+	void InitializePlayerLives(const int32 InPlayerLives);
 	void DecrementPlayerLives() const;
 
 
@@ -49,10 +62,31 @@ protected:
 
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
-	virtual void OnPossess(APawn* InPawn) override;
+
+	UPROPERTY(EditAnywhere, Category = "User Interfaces")
+	TSubclassOf<UUserWidget> MainMenuUserWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UMainMenuUserWidget> MainMenuUserWidget = nullptr;
 
 
 private:
+
+	UFUNCTION()
+	void MainMenuPlayButtonClicked();
+
+	UFUNCTION()
+	void MainMenuQuitButtonClicked();
+
+	void CreateUIWidgets();
+
+	void BindUIDelegates();
+	void BindDelegates();
+
+	void SetInputModeUI();
+	void SetInputModeGame();
+
+	void AddInputMappingContext();
 
 	void Move(const FInputActionValue& InputActionValue);
 	void Jump(const FInputActionValue& InputActionValue);
@@ -66,18 +100,21 @@ private:
 	void ReactToHazard();
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputMappingContext> TakeshiContext;
+	TObjectPtr<UInputMappingContext> TakeshiContext = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> MoveAction;
+	TObjectPtr<UInputAction> MoveAction = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> JumpAction;
+	TObjectPtr<UInputAction> JumpAction = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> LookAction;
+	TObjectPtr<UInputAction> LookAction = nullptr;
 
 	UPROPERTY()
-	ATakeshiPlayerState* TakeshiPlayerState = nullptr;
+	TObjectPtr<ATakeshiPlayerState> TakeshiPlayerState = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<ATakeshiCharacterBase> TakeshiCharacter = nullptr;
 
 };

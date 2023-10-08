@@ -2,6 +2,7 @@
 
 #include "Player/TakeshiPlayerController.h"
 
+#include "Blueprint/UserWidget.h"
 #include "GameFramework/Character.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -19,25 +20,10 @@ void ATakeshiPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	TakeshiCharacter = GetPawn<ATakeshiCharacterBase>();
 	TakeshiPlayerState = GetPlayerState<ATakeshiPlayerState>();
 
-	check(TakeshiPlayerState);
-	check(TakeshiContext);
-
-	TakeshiPlayerState->OnPlayerLivesChanged.AddDynamic(this, &ATakeshiPlayerController::PlayerLivesChanged);
-
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	if (Subsystem)
-	{
-		Subsystem->AddMappingContext(TakeshiContext, 0);
-	}
-
-	bShowMouseCursor = false;
-
-	const FInputModeGameOnly InputModeData;
-	SetInputMode(InputModeData);
-
-	OnInitialized.Broadcast();
+	OnHasBegunPlay.Broadcast();
 }
 
 void ATakeshiPlayerController::SetupInputComponent()
@@ -50,18 +36,6 @@ void ATakeshiPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ATakeshiPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ATakeshiPlayerController::StopJumping);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATakeshiPlayerController::Look);
-}
-
-void ATakeshiPlayerController::OnPossess(APawn* InPawn)
-{
-	Super::OnPossess(InPawn);
-
-	if (InPawn != nullptr)
-	{
-		ATakeshiCharacterBase* TakeshiCharacterBase = CastChecked<ATakeshiCharacterBase>(InPawn);
-
-		TakeshiCharacterBase->OnReactToHazard.AddDynamic(this, &ATakeshiPlayerController::ReactToHazard);			
-	}
 }
 
 void ATakeshiPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -107,7 +81,7 @@ void ATakeshiPlayerController::Look(const FInputActionValue& InputActionValue)
 	}
 }
 
-void ATakeshiPlayerController::InitialisePlayerLives(const int32 InPlayerLives)
+void ATakeshiPlayerController::InitializePlayerLives(const int32 InPlayerLives)
 {
 	TakeshiPlayerState->InitialisePlayerLives(InPlayerLives);
 }
@@ -125,4 +99,76 @@ void ATakeshiPlayerController::PlayerLivesChanged(int32 NewPlayerLives)
 void ATakeshiPlayerController::ReactToHazard()
 {
 	OnReactToHazard.Broadcast();
+}
+
+void ATakeshiPlayerController::InitializeForMainMenu()
+{
+	check(MainMenuUserWidgetClass);
+
+	CreateUIWidgets();
+	BindUIDelegates();
+	SetInputModeUI();
+}
+
+void ATakeshiPlayerController::CreateUIWidgets()
+{
+	MainMenuUserWidget = CreateWidget<UMainMenuUserWidget>(this, MainMenuUserWidgetClass);
+	MainMenuUserWidget->AddToViewport();
+}
+
+void ATakeshiPlayerController::BindUIDelegates()
+{
+	if (MainMenuUserWidget)
+	{
+		MainMenuUserWidget->OnPlayButtonClicked.AddDynamic(this, &ATakeshiPlayerController::MainMenuPlayButtonClicked);
+		MainMenuUserWidget->OnQuitButtonClicked.AddDynamic(this, &ATakeshiPlayerController::MainMenuQuitButtonClicked);		
+	}
+}
+
+void ATakeshiPlayerController::SetInputModeUI()
+{
+	SetInputMode(FInputModeUIOnly());
+	SetShowMouseCursor(true);
+}
+
+void ATakeshiPlayerController::InitializeForGame()
+{
+	check(TakeshiCharacter);
+	check(TakeshiPlayerState);
+	check(TakeshiContext);
+
+	BindDelegates();
+	AddInputMappingContext();
+	SetInputModeGame();
+}
+
+void ATakeshiPlayerController::BindDelegates()
+{
+	TakeshiCharacter->OnReactToHazard.AddDynamic(this, &ATakeshiPlayerController::ReactToHazard);
+	TakeshiPlayerState->OnPlayerLivesChanged.AddDynamic(this, &ATakeshiPlayerController::PlayerLivesChanged);
+}
+
+void ATakeshiPlayerController::AddInputMappingContext()
+{
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+	if (Subsystem)
+	{
+		Subsystem->AddMappingContext(TakeshiContext, 0);
+	}
+}
+
+void ATakeshiPlayerController::SetInputModeGame()
+{
+	SetInputMode(FInputModeGameOnly());
+	SetShowMouseCursor(false);
+}
+
+void ATakeshiPlayerController::MainMenuPlayButtonClicked()
+{
+	OnMainMenuPlayButtonClicked.Broadcast();
+}
+
+void ATakeshiPlayerController::MainMenuQuitButtonClicked()
+{
+	OnMainMenuQuitButtonClicked.Broadcast();
 }

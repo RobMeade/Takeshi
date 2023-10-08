@@ -9,8 +9,6 @@
 
 
 // Forward Declarations
-class ACourseStartZone;
-class ACourseEndZone;
 class ATakeshiPlayerController;
 
 
@@ -28,35 +26,16 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void BindDelegates();
 
 	UFUNCTION()
 	virtual void PlayerControllerInitialized();
 
-	UFUNCTION()
-	virtual void ReactToHazard();
-
-	UFUNCTION()
-	virtual void PlayerLivesChanged(int32 NewPlayerLives);
-
-	UFUNCTION()
-	virtual void PlayerEnteredCourseEndZone();
-
-	UFUNCTION()
-	virtual void PlayerExitedCourseStartZone();
-
 	UPROPERTY()
 	TObjectPtr<ATakeshiPlayerController> TakeshiPlayerController = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<ACourseStartZone> CourseStartZone = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<ACourseEndZone> CourseEndZone = nullptr;
 
 
 private:
 
-	void SetCourseZones();
-	void BindDelegates();
 
 };
