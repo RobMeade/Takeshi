@@ -17,11 +17,14 @@ void ASkippingStonesGameMode::PlayerControllerInitialized()
 	TakeshiPlayerController->InitializePlayerLives(InitialPlayerLives);
 }
 
-void ASkippingStonesGameMode::ReactToHazard()
+void ASkippingStonesGameMode::PlayerCharacterDestroyed()
 {
-	Super::ReactToHazard();
+	Super::PlayerCharacterDestroyed();
 
-	TakeshiPlayerController->DecrementPlayerLives();
+	if (!bIsCourseCompleted)
+	{
+		TakeshiPlayerController->DecrementPlayerLives();
+	}
 }
 
 void ASkippingStonesGameMode::PlayerLivesChanged(int32 NewPlayerLives)
@@ -30,15 +33,14 @@ void ASkippingStonesGameMode::PlayerLivesChanged(int32 NewPlayerLives)
 
 	if (NewPlayerLives > 0 && NewPlayerLives < InitialPlayerLives)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Respawning Player Character"));
-		RestartPlayer(TakeshiPlayerController);
+		RestartPlayer(TakeshiPlayerController);	
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("Player Lives Remaining: %d"), NewPlayerLives);
 
 	if (NewPlayerLives == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Game Over - Player Loses"));
+		TakeshiPlayerController->GameOver(EGameOverOutcome::PlayerLoss);
 	}
 }
 

@@ -24,9 +24,6 @@ protected:
 	virtual void BindDelegates() override;
 	virtual void PlayerControllerInitialized() override;
 
-	UPROPERTY(EditAnywhere, Category = "Courses")
-	TSoftObjectPtr<UWorld> FirstCourseMap = nullptr;
-
 
 private:
 

@@ -15,10 +15,6 @@ class UCameraComponent;
 class USpringArmComponent;
 
 
-// Delegate Declarations
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterReactToHazardSignature);
-
-
 UCLASS(config=Game)
 class ATakeshiCharacterBase : public ACharacter, public IReactToHazardInterface
 {
@@ -28,9 +24,6 @@ class ATakeshiCharacterBase : public ACharacter, public IReactToHazardInterface
 public:
 
 	ATakeshiCharacterBase();
-
-	UPROPERTY(BlueprintAssignable)
-	FOnCharacterReactToHazardSignature OnReactToHazard;
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

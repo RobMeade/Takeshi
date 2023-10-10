@@ -9,6 +9,8 @@
 
 #include "Character/TakeshiCharacterBase.h"
 #include "Player/TakeshiPlayerState.h"
+#include "UI/GameOverUserWidget.h"
+#include "UI/MainMenuUserWidget.h"
 
 
 ATakeshiPlayerController::ATakeshiPlayerController()
@@ -20,8 +22,7 @@ void ATakeshiPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TakeshiCharacter = GetPawn<ATakeshiCharacterBase>();
-	TakeshiPlayerState = GetPlayerState<ATakeshiPlayerState>();
+	SetupPlayerState();
 
 	OnHasBegunPlay.Broadcast();
 }
@@ -37,6 +38,35 @@ void ATakeshiPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ATakeshiPlayerController::StopJumping);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATakeshiPlayerController::Look);
 }
+
+void ATakeshiPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	SetupPlayerCharacter();
+}
+
+void ATakeshiPlayerController::SetupPlayerState()
+{
+	TakeshiPlayerState = GetPlayerState<ATakeshiPlayerState>();
+
+	if (TakeshiPlayerState)
+	{
+		TakeshiPlayerState->OnPlayerLivesChanged.AddDynamic(this, &ATakeshiPlayerController::PlayerLivesChanged);
+	}
+}
+
+void ATakeshiPlayerController::SetupPlayerCharacter()
+{
+	TakeshiCharacter = GetPawn<ATakeshiCharacterBase>();
+
+	if (TakeshiCharacter)
+	{
+		TakeshiCharacter->OnDestroyed.AddDynamic(this, &ATakeshiPlayerController::PlayerCharacterDestroyed);
+	}
+}
+
+//	Player Movement
 
 void ATakeshiPlayerController::Move(const FInputActionValue& InputActionValue)
 {
@@ -81,6 +111,7 @@ void ATakeshiPlayerController::Look(const FInputActionValue& InputActionValue)
 	}
 }
 
+//	Player Lives
 void ATakeshiPlayerController::InitializePlayerLives(const int32 InPlayerLives)
 {
 	TakeshiPlayerState->InitialisePlayerLives(InPlayerLives);
@@ -96,33 +127,19 @@ void ATakeshiPlayerController::PlayerLivesChanged(int32 NewPlayerLives)
 	OnPlayerLivesChanged.Broadcast(NewPlayerLives);
 }
 
-void ATakeshiPlayerController::ReactToHazard()
+void ATakeshiPlayerController::PlayerCharacterDestroyed(AActor* Actor)
 {
-	OnReactToHazard.Broadcast();
+	OnPlayerCharacterDestroyed.Broadcast();
 }
+
+//	Initialization
 
 void ATakeshiPlayerController::InitializeForMainMenu()
 {
 	check(MainMenuUserWidgetClass);
 
-	CreateUIWidgets();
-	BindUIDelegates();
+	SetupMainMenuUIWidgets();
 	SetInputModeUI();
-}
-
-void ATakeshiPlayerController::CreateUIWidgets()
-{
-	MainMenuUserWidget = CreateWidget<UMainMenuUserWidget>(this, MainMenuUserWidgetClass);
-	MainMenuUserWidget->AddToViewport();
-}
-
-void ATakeshiPlayerController::BindUIDelegates()
-{
-	if (MainMenuUserWidget)
-	{
-		MainMenuUserWidget->OnPlayButtonClicked.AddDynamic(this, &ATakeshiPlayerController::MainMenuPlayButtonClicked);
-		MainMenuUserWidget->OnQuitButtonClicked.AddDynamic(this, &ATakeshiPlayerController::MainMenuQuitButtonClicked);		
-	}
 }
 
 void ATakeshiPlayerController::SetInputModeUI()
@@ -136,16 +153,11 @@ void ATakeshiPlayerController::InitializeForGame()
 	check(TakeshiCharacter);
 	check(TakeshiPlayerState);
 	check(TakeshiContext);
+	check(GameOverUserWidgetClass);
 
-	BindDelegates();
+	SetupGameOverUIWidgets();
 	AddInputMappingContext();
 	SetInputModeGame();
-}
-
-void ATakeshiPlayerController::BindDelegates()
-{
-	TakeshiCharacter->OnReactToHazard.AddDynamic(this, &ATakeshiPlayerController::ReactToHazard);
-	TakeshiPlayerState->OnPlayerLivesChanged.AddDynamic(this, &ATakeshiPlayerController::PlayerLivesChanged);
 }
 
 void ATakeshiPlayerController::AddInputMappingContext()
@@ -163,6 +175,46 @@ void ATakeshiPlayerController::SetInputModeGame()
 	SetShowMouseCursor(false);
 }
 
+//	Game Over
+
+void ATakeshiPlayerController::GameOver(const EGameOverOutcome Outcome)
+{
+	DisableInput(this);
+	SetInputModeUI();
+
+	if (GameOverUserWidget)
+	{
+		GameOverUserWidget->SetOutcomeText(Outcome);
+		GameOverUserWidget->AddToViewport();		
+	}
+}
+
+//	User-Interfaces
+
+void ATakeshiPlayerController::SetupMainMenuUIWidgets()
+{
+	MainMenuUserWidget = CreateWidget<UMainMenuUserWidget>(this, MainMenuUserWidgetClass);
+
+	if (MainMenuUserWidget)
+	{
+		MainMenuUserWidget->OnPlayButtonClicked.AddDynamic(this, &ATakeshiPlayerController::MainMenuPlayButtonClicked);
+		MainMenuUserWidget->OnQuitButtonClicked.AddDynamic(this, &ATakeshiPlayerController::MainMenuQuitButtonClicked);
+
+		MainMenuUserWidget->AddToViewport();
+	}
+}
+
+void ATakeshiPlayerController::SetupGameOverUIWidgets()
+{
+	GameOverUserWidget = CreateWidget<UGameOverUserWidget>(this, GameOverUserWidgetClass);
+
+	if (GameOverUserWidget)
+	{
+		GameOverUserWidget->OnPlayAgainButtonClicked.AddDynamic(this, &ATakeshiPlayerController::GameOverPlayAgainButtonClicked);
+		GameOverUserWidget->OnMainMenuButtonClicked.AddDynamic(this, &ATakeshiPlayerController::GameOverMainMenuButtonClicked);
+	}
+}
+
 void ATakeshiPlayerController::MainMenuPlayButtonClicked()
 {
 	OnMainMenuPlayButtonClicked.Broadcast();
@@ -171,4 +223,14 @@ void ATakeshiPlayerController::MainMenuPlayButtonClicked()
 void ATakeshiPlayerController::MainMenuQuitButtonClicked()
 {
 	OnMainMenuQuitButtonClicked.Broadcast();
+}
+
+void ATakeshiPlayerController::GameOverPlayAgainButtonClicked()
+{
+	OnGameOverPlayAgainButtonClicked.Broadcast();
+}
+
+void ATakeshiPlayerController::GameOverMainMenuButtonClicked()
+{
+	OnGameOverMainMenuButtonClicked.Broadcast();
 }

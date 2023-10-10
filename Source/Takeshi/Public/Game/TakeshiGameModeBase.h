@@ -34,6 +34,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ATakeshiPlayerController> TakeshiPlayerController = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = "Maps")
+	TSoftObjectPtr<UWorld> MainMenuMap = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Maps")
+	TSoftObjectPtr<UWorld> FirstCourseMap = nullptr;
+
 
 private:
 

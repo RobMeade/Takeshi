@@ -43,7 +43,4 @@ void ATakeshiCharacterBase::ReactToHazard()
 void ATakeshiCharacterBase::Destroyed()
 {
 	Super::Destroyed();
-
-	OnReactToHazard.Broadcast();
-	OnReactToHazard.Clear();
 }

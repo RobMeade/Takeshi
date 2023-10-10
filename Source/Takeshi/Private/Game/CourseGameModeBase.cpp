@@ -4,6 +4,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
+#include "Game/GameOverOutcome.h"
 #include "Interaction/CourseStartZone.h"
 #include "Interaction/CourseEndZone.h"
 #include "Player/TakeshiPlayerController.h"
@@ -41,8 +42,11 @@ void ACourseGameModeBase::BindDelegates()
 {
 	Super::BindDelegates();
 
-	TakeshiPlayerController->OnReactToHazard.AddDynamic(this, &ACourseGameModeBase::ReactToHazard);
+	TakeshiPlayerController->OnPlayerCharacterDestroyed.AddDynamic(this, &ACourseGameModeBase::PlayerCharacterDestroyed);
 	TakeshiPlayerController->OnPlayerLivesChanged.AddDynamic(this, &ACourseGameModeBase::PlayerLivesChanged);
+
+	TakeshiPlayerController->OnGameOverPlayAgainButtonClicked.AddDynamic(this, &ACourseGameModeBase::PlayAgain);
+	TakeshiPlayerController->OnGameOverMainMenuButtonClicked.AddDynamic(this, &ACourseGameModeBase::ReturnToMainMenu);
 
 	CourseStartZone->OnPlayerExitedStartZone.AddDynamic(this, &ACourseGameModeBase::PlayerExitedCourseStartZone);
 	CourseEndZone->OnPlayerEnteredCourseEndZone.AddDynamic(this, &ACourseGameModeBase::PlayerEnteredCourseEndZone);
@@ -53,7 +57,7 @@ void ACourseGameModeBase::PlayerControllerInitialized()
 	TakeshiPlayerController->InitializeForGame();
 }
 
-void ACourseGameModeBase::ReactToHazard()
+void ACourseGameModeBase::PlayerCharacterDestroyed()
 {
 	// Note: Deliberately left empty, overriden in derived classes
 }
@@ -65,12 +69,22 @@ void ACourseGameModeBase::PlayerLivesChanged(int32 NewPlayerLives)
 
 void ACourseGameModeBase::PlayerEnteredCourseEndZone()
 {
-	// Note: Deliberately left empty, overriden in derived classes
-	UE_LOG(LogTemp, Warning, TEXT("Game Over - Player Wins"));
+	bIsCourseCompleted = true;
+	TakeshiPlayerController->GameOver(EGameOverOutcome::PlayerWin);
 }
 
 void ACourseGameModeBase::PlayerExitedCourseStartZone()
 {
 	// Note: Deliberately left empty, overriden in derived classes
 	UE_LOG(LogTemp, Warning, TEXT("Player exited Start Zone"));
+}
+
+void ACourseGameModeBase::PlayAgain()
+{
+	UGameplayStatics::OpenLevelBySoftObjectPtr(this, FirstCourseMap);
+}
+
+void ACourseGameModeBase::ReturnToMainMenu()
+{
+	UGameplayStatics::OpenLevelBySoftObjectPtr(this, MainMenuMap);
 }

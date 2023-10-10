@@ -4,7 +4,10 @@
 
 #include "GameFramework/PlayerController.h"
 #include "CoreMinimal.h"
-#include "UI/MainMenuUserWidget.h"
+
+#include "Game/GameOverOutcome.h"
+//#include "UI/GameOverUserWidget.h"
+//#include "UI/MainMenuUserWidget.h"
 
 #include "TakeshiPlayerController.generated.h"
 
@@ -16,13 +19,17 @@ struct FInputActionValue;
 
 class ATakeshiCharacterBase;
 class ATakeshiPlayerState;
+class UGameOverUserWidget;
+class UMainMenuUserWidget;
 
 
 // Delegate Declarations
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerHasBegunPlaySignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerMainMenuPlayButtonClickedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerMainMenuQuitButtonClickedSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerReactToHazardSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerGameOverPlayAgainButtonClickedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerGameOverMainMenuButtonClickedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerPlayerCharacterDestroyedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnControllerPlayerLivesChangedSignature, int32, NewPlayerLives);
 
 
@@ -40,7 +47,7 @@ public:
 	FOnControllerHasBegunPlaySignature OnHasBegunPlay;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnControllerReactToHazardSignature OnReactToHazard;
+	FOnControllerPlayerCharacterDestroyedSignature OnPlayerCharacterDestroyed;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnControllerPlayerLivesChangedSignature OnPlayerLivesChanged;
@@ -51,23 +58,38 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnControllerMainMenuQuitButtonClickedSignature OnMainMenuQuitButtonClicked;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnControllerGameOverPlayAgainButtonClickedSignature OnGameOverPlayAgainButtonClicked;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnControllerGameOverMainMenuButtonClickedSignature OnGameOverMainMenuButtonClicked;
+
 	void InitializeForMainMenu();
 	void InitializeForGame();
 
 	void InitializePlayerLives(const int32 InPlayerLives);
 	void DecrementPlayerLives() const;
 
+	void GameOver(const EGameOverOutcome Outcome);
+
 
 protected:
 
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 	UPROPERTY(EditAnywhere, Category = "User Interfaces")
 	TSubclassOf<UUserWidget> MainMenuUserWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<UMainMenuUserWidget> MainMenuUserWidget = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "User Interfaces")
+	TSubclassOf<UUserWidget> GameOverUserWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UGameOverUserWidget> GameOverUserWidget = nullptr;
 
 
 private:
@@ -78,10 +100,16 @@ private:
 	UFUNCTION()
 	void MainMenuQuitButtonClicked();
 
-	void CreateUIWidgets();
+	UFUNCTION()
+	void GameOverPlayAgainButtonClicked();
 
-	void BindUIDelegates();
-	void BindDelegates();
+	UFUNCTION()
+	void GameOverMainMenuButtonClicked();
+
+	void SetupPlayerState();
+	void SetupPlayerCharacter();
+	void SetupMainMenuUIWidgets();
+	void SetupGameOverUIWidgets();
 
 	void SetInputModeUI();
 	void SetInputModeGame();
@@ -97,7 +125,7 @@ private:
 	void PlayerLivesChanged(int32 NewPlayerLives);
 
 	UFUNCTION()
-	void ReactToHazard();
+	void PlayerCharacterDestroyed(AActor* Actor);
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> TakeshiContext = nullptr;

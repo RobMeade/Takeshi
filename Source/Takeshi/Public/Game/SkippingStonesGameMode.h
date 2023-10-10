@@ -21,7 +21,7 @@ protected:
 
 	virtual void BeginPlay() override;
 	virtual void PlayerControllerInitialized() override;
-	virtual void ReactToHazard() override;
+	virtual void PlayerCharacterDestroyed() override;
 	virtual void PlayerLivesChanged(int32 NewPlayerLives) override;
 	virtual void PlayerEnteredCourseEndZone() override;
 

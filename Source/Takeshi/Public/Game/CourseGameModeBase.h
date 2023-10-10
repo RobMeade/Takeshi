@@ -32,7 +32,7 @@ protected:
 	virtual void PlayerControllerInitialized() override;
 
 	UFUNCTION()
-	virtual void ReactToHazard();
+	virtual void PlayerCharacterDestroyed();
 
 	UFUNCTION()
 	virtual void PlayerLivesChanged(int32 NewPlayerLives);
@@ -52,10 +52,17 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Course Properties")
 	int32 InitialPlayerLives = 0;
 
+	bool bIsCourseCompleted = false;
+
 
 private:
 
 	void SetCourseZones();
 
+	UFUNCTION()
+	void PlayAgain();
+
+	UFUNCTION()
+	void ReturnToMainMenu();
 	
 };
