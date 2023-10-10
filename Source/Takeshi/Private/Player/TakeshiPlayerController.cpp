@@ -10,6 +10,7 @@
 #include "Character/TakeshiCharacterBase.h"
 #include "Player/TakeshiPlayerState.h"
 #include "UI/GameOverUserWidget.h"
+#include "UI/HUDUserWidget.h"
 #include "UI/MainMenuUserWidget.h"
 
 
@@ -124,6 +125,11 @@ void ATakeshiPlayerController::DecrementPlayerLives() const
 
 void ATakeshiPlayerController::PlayerLivesChanged(int32 NewPlayerLives)
 {
+	if (HUDUserWidget)
+	{
+		HUDUserWidget->SetPlayerLives(NewPlayerLives);
+	}
+
 	OnPlayerLivesChanged.Broadcast(NewPlayerLives);
 }
 
@@ -153,9 +159,11 @@ void ATakeshiPlayerController::InitializeForGame()
 	check(TakeshiCharacter);
 	check(TakeshiPlayerState);
 	check(TakeshiContext);
+	check(HUDUserWidgetClass);
 	check(GameOverUserWidgetClass);
 
 	SetupGameOverUIWidgets();
+	SetupHUDUIWidgets();
 	AddInputMappingContext();
 	SetInputModeGame();
 }
@@ -213,6 +221,13 @@ void ATakeshiPlayerController::SetupGameOverUIWidgets()
 		GameOverUserWidget->OnPlayAgainButtonClicked.AddDynamic(this, &ATakeshiPlayerController::GameOverPlayAgainButtonClicked);
 		GameOverUserWidget->OnMainMenuButtonClicked.AddDynamic(this, &ATakeshiPlayerController::GameOverMainMenuButtonClicked);
 	}
+}
+
+void ATakeshiPlayerController::SetupHUDUIWidgets()
+{
+	HUDUserWidget = CreateWidget<UHUDUserWidget>(this, HUDUserWidgetClass);
+
+	HUDUserWidget->AddToViewport();
 }
 
 void ATakeshiPlayerController::MainMenuPlayButtonClicked()

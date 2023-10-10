@@ -20,6 +20,7 @@ struct FInputActionValue;
 class ATakeshiCharacterBase;
 class ATakeshiPlayerState;
 class UGameOverUserWidget;
+class UHUDUserWidget;
 class UMainMenuUserWidget;
 
 
@@ -91,6 +92,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UGameOverUserWidget> GameOverUserWidget = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = "User Interfaces")
+	TSubclassOf<UUserWidget> HUDUserWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UHUDUserWidget> HUDUserWidget = nullptr;
+
 
 private:
 
@@ -110,6 +117,7 @@ private:
 	void SetupPlayerCharacter();
 	void SetupMainMenuUIWidgets();
 	void SetupGameOverUIWidgets();
+	void SetupHUDUIWidgets();
 
 	void SetInputModeUI();
 	void SetInputModeGame();

@@ -31,16 +31,13 @@ void ASkippingStonesGameMode::PlayerLivesChanged(int32 NewPlayerLives)
 {
 	Super::PlayerLivesChanged(NewPlayerLives);
 
-	if (NewPlayerLives > 0 && NewPlayerLives < InitialPlayerLives)
-	{
-		RestartPlayer(TakeshiPlayerController);	
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Player Lives Remaining: %d"), NewPlayerLives);
-
 	if (NewPlayerLives == 0)
 	{
 		TakeshiPlayerController->GameOver(EGameOverOutcome::PlayerLoss);
+	}
+	else if (NewPlayerLives > 0 && NewPlayerLives < InitialPlayerLives)
+	{
+		RestartPlayer(TakeshiPlayerController);	
 	}
 }
 
