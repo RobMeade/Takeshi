@@ -58,11 +58,5 @@ protected:
 private:
 
 	void SetCourseZones();
-
-	UFUNCTION()
-	void PlayAgain();
-
-	UFUNCTION()
-	void ReturnToMainMenu();
 	
 };

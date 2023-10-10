@@ -45,9 +45,6 @@ void ACourseGameModeBase::BindDelegates()
 	TakeshiPlayerController->OnPlayerCharacterDestroyed.AddDynamic(this, &ACourseGameModeBase::PlayerCharacterDestroyed);
 	TakeshiPlayerController->OnPlayerLivesChanged.AddDynamic(this, &ACourseGameModeBase::PlayerLivesChanged);
 
-	TakeshiPlayerController->OnGameOverPlayAgainButtonClicked.AddDynamic(this, &ACourseGameModeBase::PlayAgain);
-	TakeshiPlayerController->OnGameOverMainMenuButtonClicked.AddDynamic(this, &ACourseGameModeBase::ReturnToMainMenu);
-
 	CourseStartZone->OnPlayerExitedStartZone.AddDynamic(this, &ACourseGameModeBase::PlayerExitedCourseStartZone);
 	CourseEndZone->OnPlayerEnteredCourseEndZone.AddDynamic(this, &ACourseGameModeBase::PlayerEnteredCourseEndZone);
 }
@@ -77,14 +74,4 @@ void ACourseGameModeBase::PlayerExitedCourseStartZone()
 {
 	// Note: Deliberately left empty, overriden in derived classes
 	UE_LOG(LogTemp, Warning, TEXT("Player exited Start Zone"));
-}
-
-void ACourseGameModeBase::PlayAgain()
-{
-	UGameplayStatics::OpenLevelBySoftObjectPtr(this, FirstCourseMap);
-}
-
-void ACourseGameModeBase::ReturnToMainMenu()
-{
-	UGameplayStatics::OpenLevelBySoftObjectPtr(this, MainMenuMap);
 }

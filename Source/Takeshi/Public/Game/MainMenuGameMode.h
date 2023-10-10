@@ -27,10 +27,5 @@ protected:
 
 private:
 
-	UFUNCTION()
-	void PlayGame();
-
-	UFUNCTION()
-	void QuitGame();
 
 };

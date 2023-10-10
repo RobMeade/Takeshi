@@ -43,5 +43,16 @@ protected:
 
 private:
 
+	UFUNCTION()
+	void PlayGame();
+
+	UFUNCTION()
+	void QuitGame();
+
+	UFUNCTION()
+	void PlayAgain();
+
+	UFUNCTION()
+	void ReturnToMainMenu();
 
 };
