@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "Game/CourseGameModeBase.h"
 #include "CoreMinimal.h"
+
+#include "Game/CourseGameModeBase.h"
 
 #include "SkippingStonesGameMode.generated.h"
 
@@ -18,12 +19,6 @@ public:
 
 	
 protected:
-
-	virtual void BeginPlay() override;
-	virtual void PlayerControllerInitialized() override;
-	virtual void PlayerCharacterDestroyed() override;
-	virtual void PlayerLivesChanged(int32 NewPlayerLives) override;
-	virtual void PlayerEnteredCourseEndZone() override;
 
 
 private:

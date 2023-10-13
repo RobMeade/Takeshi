@@ -6,8 +6,6 @@
 #include "CoreMinimal.h"
 
 #include "Game/GameOverOutcome.h"
-//#include "UI/GameOverUserWidget.h"
-//#include "UI/MainMenuUserWidget.h"
 
 #include "TakeshiPlayerController.generated.h"
 
@@ -17,6 +15,7 @@ class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
 
+class ACourseGameModeBase;
 class ATakeshiCharacterBase;
 class ATakeshiPlayerState;
 class UGameOverUserWidget;
@@ -26,6 +25,8 @@ class UMainMenuUserWidget;
 
 // Delegate Declarations
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerHasBegunPlaySignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerInitializationForGameCompletedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerInitializationForMainMenuCompletedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerMainMenuPlayButtonClickedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerMainMenuQuitButtonClickedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerGameOverPlayAgainButtonClickedSignature);
@@ -46,6 +47,12 @@ public:
 
 	UPROPERTY()
 	FOnControllerHasBegunPlaySignature OnHasBegunPlay;
+
+	UPROPERTY()
+	FOnControllerInitializationForGameCompletedSignature OnInitializationForGameCompleted;
+
+	UPROPERTY()
+	FOnControllerInitializationForMainMenuCompletedSignature OnInitializationForMainMenuCompleted;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnControllerPlayerCharacterDestroyedSignature OnPlayerCharacterDestroyed;
@@ -68,6 +75,7 @@ public:
 	void InitializeForMainMenu();
 	void InitializeForGame();
 
+	void InitializeCourseTimer(const int32 InTimeInSeconds);
 	void InitializePlayerLives(const int32 InPlayerLives);
 	void DecrementPlayerLives() const;
 
@@ -113,6 +121,7 @@ private:
 	UFUNCTION()
 	void GameOverMainMenuButtonClicked();
 
+	void SetupCourseGameMode();
 	void SetupPlayerState();
 	void SetupPlayerCharacter();
 	void SetupMainMenuUIWidgets();
@@ -128,6 +137,9 @@ private:
 	void Jump(const FInputActionValue& InputActionValue);
 	void StopJumping(const FInputActionValue& InputActionValue);
 	void Look(const FInputActionValue& InputActionValue);
+
+	UFUNCTION()
+	void CourseTimerChanged(int32 NewTimeInSeconds);
 
 	UFUNCTION()
 	void PlayerLivesChanged(int32 NewPlayerLives);
@@ -146,6 +158,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> LookAction = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<ACourseGameModeBase> CourseGameMode = nullptr;
 
 	UPROPERTY()
 	TObjectPtr<ATakeshiPlayerState> TakeshiPlayerState = nullptr;

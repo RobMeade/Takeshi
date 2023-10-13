@@ -9,6 +9,7 @@
 
 
 // Forward Declarations
+class UCourseTimerUserWidget;
 class UPlayerLivesUserWidget;
 
 
@@ -20,6 +21,7 @@ class TAKESHI_API UHUDUserWidget : public UUserWidget
 
 public:
 
+	void SetCourseTimer(const float NewTimeInSeconds) const;
 	void SetPlayerLives(const int32 NewPlayerLives) const;
 
 
@@ -29,6 +31,9 @@ protected:
 
 
 private:
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCourseTimerUserWidget> CourseTimer = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UPlayerLivesUserWidget> PlayerLives = nullptr;

@@ -29,7 +29,13 @@ protected:
 	virtual void BindDelegates();
 
 	UFUNCTION()
-	virtual void PlayerControllerInitialized();
+	virtual void PlayerControllerHasBegunPlay();
+
+	UFUNCTION()
+	virtual void PlayerControllerInitializationForGameCompleted();
+
+	UFUNCTION()
+	virtual void PlayerControllerInitializationForMainMenuCompleted();
 
 	UPROPERTY()
 	TObjectPtr<ATakeshiPlayerController> TakeshiPlayerController = nullptr;

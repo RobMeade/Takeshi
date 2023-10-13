@@ -6,8 +6,10 @@
 #include "GameFramework/Character.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "Character/TakeshiCharacterBase.h"
+#include "Game/CourseGameModeBase.h"
 #include "Player/TakeshiPlayerState.h"
 #include "UI/GameOverUserWidget.h"
 #include "UI/HUDUserWidget.h"
@@ -112,7 +114,23 @@ void ATakeshiPlayerController::Look(const FInputActionValue& InputActionValue)
 	}
 }
 
+// Course Timer
+
+void ATakeshiPlayerController::InitializeCourseTimer(const int32 InTimeInSeconds)
+{
+	CourseTimerChanged(InTimeInSeconds);
+}
+
+void ATakeshiPlayerController::CourseTimerChanged(int32 NewTimeInSeconds)
+{
+	if (HUDUserWidget)
+	{
+		HUDUserWidget->SetCourseTimer(NewTimeInSeconds);
+	}
+}
+
 //	Player Lives
+
 void ATakeshiPlayerController::InitializePlayerLives(const int32 InPlayerLives)
 {
 	TakeshiPlayerState->InitialisePlayerLives(InPlayerLives);
@@ -162,10 +180,13 @@ void ATakeshiPlayerController::InitializeForGame()
 	check(HUDUserWidgetClass);
 	check(GameOverUserWidgetClass);
 
+	SetupCourseGameMode();
 	SetupGameOverUIWidgets();
 	SetupHUDUIWidgets();
 	AddInputMappingContext();
 	SetInputModeGame();
+
+	OnInitializationForGameCompleted.Broadcast();
 }
 
 void ATakeshiPlayerController::AddInputMappingContext()
@@ -187,13 +208,16 @@ void ATakeshiPlayerController::SetInputModeGame()
 
 void ATakeshiPlayerController::GameOver(const EGameOverOutcome Outcome)
 {
-	DisableInput(this);
-	SetInputModeUI();
-
-	if (GameOverUserWidget)
+	if (!GameOverUserWidget->IsInViewport())
 	{
-		GameOverUserWidget->SetOutcomeText(Outcome);
-		GameOverUserWidget->AddToViewport();		
+		DisableInput(this);
+		SetInputModeUI();
+
+		if (GameOverUserWidget)
+		{
+			GameOverUserWidget->SetOutcomeText(Outcome);
+			GameOverUserWidget->AddToViewport();		
+		}		
 	}
 }
 
@@ -228,6 +252,16 @@ void ATakeshiPlayerController::SetupHUDUIWidgets()
 	HUDUserWidget = CreateWidget<UHUDUserWidget>(this, HUDUserWidgetClass);
 
 	HUDUserWidget->AddToViewport();
+}
+
+void ATakeshiPlayerController::SetupCourseGameMode()
+{
+	CourseGameMode = Cast<ACourseGameModeBase>(UGameplayStatics::GetGameMode(this));
+
+	if (CourseGameMode)
+	{
+		CourseGameMode->OnCourseTimeChanged.AddDynamic(this, &ATakeshiPlayerController::CourseTimerChanged);
+	}
 }
 
 void ATakeshiPlayerController::MainMenuPlayButtonClicked()

@@ -17,9 +17,9 @@ void AMainMenuGameMode::BindDelegates()
 	Super::BindDelegates();
 }
 
-void AMainMenuGameMode::PlayerControllerInitialized()
+void AMainMenuGameMode::PlayerControllerHasBegunPlay()
 {
-	Super::PlayerControllerInitialized();
+	Super::PlayerControllerHasBegunPlay();
 
 	DisableInput(TakeshiPlayerController);
 	TakeshiPlayerController->InitializeForMainMenu();

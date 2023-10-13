@@ -4,7 +4,6 @@
 
 #include "Kismet/GameplayStatics.h"
 
-
 #include "Player/TakeshiPlayerController.h"
 
 
@@ -23,7 +22,9 @@ void ATakeshiGameModeBase::BeginPlay()
 
 void ATakeshiGameModeBase::BindDelegates()
 {
-	TakeshiPlayerController->OnHasBegunPlay.AddDynamic(this, &ATakeshiGameModeBase::PlayerControllerInitialized);
+	TakeshiPlayerController->OnHasBegunPlay.AddDynamic(this, &ATakeshiGameModeBase::PlayerControllerHasBegunPlay);
+	TakeshiPlayerController->OnInitializationForMainMenuCompleted.AddDynamic(this, &ATakeshiGameModeBase::PlayerControllerInitializationForMainMenuCompleted);
+	TakeshiPlayerController->OnInitializationForGameCompleted.AddDynamic(this, &ATakeshiGameModeBase::PlayerControllerInitializationForGameCompleted);
 
 	TakeshiPlayerController->OnMainMenuPlayButtonClicked.AddDynamic(this, &ATakeshiGameModeBase::PlayGame);
 	TakeshiPlayerController->OnMainMenuQuitButtonClicked.AddDynamic(this, &ATakeshiGameModeBase::QuitGame);
@@ -31,7 +32,17 @@ void ATakeshiGameModeBase::BindDelegates()
 	TakeshiPlayerController->OnGameOverMainMenuButtonClicked.AddDynamic(this, &ATakeshiGameModeBase::ReturnToMainMenu);
 }
 
-void ATakeshiGameModeBase::PlayerControllerInitialized()
+void ATakeshiGameModeBase::PlayerControllerHasBegunPlay()
+{
+	// Note: Deliberately left empty, overriden in derived classes
+}
+
+void ATakeshiGameModeBase::PlayerControllerInitializationForGameCompleted()
+{
+	// Note: Deliberately left empty, overriden in derived classes
+}
+
+void ATakeshiGameModeBase::PlayerControllerInitializationForMainMenuCompleted()
 {
 	// Note: Deliberately left empty, overriden in derived classes
 }

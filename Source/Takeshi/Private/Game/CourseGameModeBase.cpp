@@ -15,12 +15,41 @@ ACourseGameModeBase::ACourseGameModeBase()
 	// ...
 }
 
+bool ACourseGameModeBase::CanEditChange(const FProperty* InProperty) const
+{
+	bool bParentCanEditChange = Super::CanEditChange(InProperty);
+
+	if (InProperty->GetName() == GET_MEMBER_NAME_CHECKED(ACourseGameModeBase, CourseTimerFunction))
+	{
+		return bParentCanEditChange && bEnableCourseTimer;
+	}
+
+	if (InProperty->GetName() == GET_MEMBER_NAME_CHECKED(ACourseGameModeBase, CourseDuration))
+	{
+		return bParentCanEditChange && bEnableCourseTimer && CourseTimerFunction == ECourseTimerFunction::Decrement;
+	}
+
+	if (InProperty->GetName() == GET_MEMBER_NAME_CHECKED(ACourseGameModeBase, MaximumCourseDuration))
+	{
+		return bParentCanEditChange && bEnableCourseTimer && CourseTimerFunction == ECourseTimerFunction::Increment;
+	}
+
+	return bParentCanEditChange;
+}
+
 void ACourseGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetCourseZones();
 	BindDelegates();
+}
+
+void ACourseGameModeBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	GetWorld()->GetTimerManager().ClearTimer(CourseTimerHandle);
 }
 
 void ACourseGameModeBase::SetCourseZones()
@@ -49,29 +78,138 @@ void ACourseGameModeBase::BindDelegates()
 	CourseEndZone->OnPlayerEnteredCourseEndZone.AddDynamic(this, &ACourseGameModeBase::PlayerEnteredCourseEndZone);
 }
 
-void ACourseGameModeBase::PlayerControllerInitialized()
+void ACourseGameModeBase::PlayerControllerHasBegunPlay()
 {
 	TakeshiPlayerController->InitializeForGame();
 }
 
+void ACourseGameModeBase::PlayerControllerInitializationForGameCompleted()
+{
+	Super::PlayerControllerInitializationForGameCompleted();
+
+	InitializeCourseTimer();
+	InitializePlayerLives();
+}
+
+void ACourseGameModeBase::InitializeCourseTimer()
+{
+	if (bEnableCourseTimer)
+	{
+		if (CourseTimerFunction == ECourseTimerFunction::Decrement)
+		{
+			CourseTime = CourseDuration;
+		}
+		else if (CourseTimerFunction == ECourseTimerFunction::Increment)
+		{
+			CourseTime = 0;
+		}
+
+		TakeshiPlayerController->InitializeCourseTimer(CourseTime);
+	}
+}
+
+void ACourseGameModeBase::InitializePlayerLives()
+{
+	if (bEnablePlayerLives)
+	{
+		TakeshiPlayerController->InitializePlayerLives(InitialPlayerLives);
+	}
+}
+
+void ACourseGameModeBase::StartCourseTimer()
+{
+	if (bEnableCourseTimer)
+	{
+		GetWorld()->GetTimerManager().SetTimer(CourseTimerHandle, this, &ACourseGameModeBase::UpdateCourseTimer, 1.0f, true);
+	}
+}
+
+void ACourseGameModeBase::StopCourseTimer()
+{
+	if (bEnableCourseTimer)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(CourseTimerHandle);
+	}
+}
+
+void ACourseGameModeBase::UpdateCourseTimer()
+{
+	if (CourseTimerFunction == ECourseTimerFunction::Decrement)
+	{
+		DecrementCourseTimer();
+	}
+	else if (CourseTimerFunction == ECourseTimerFunction::Increment)
+	{
+		IncrementCourseTimer();
+	}
+}
+
+void ACourseGameModeBase::DecrementCourseTimer()
+{
+	CourseTime--;
+
+	OnCourseTimeChanged.Broadcast(CourseTime);
+
+	if (CourseTime == 0)
+	{
+		bIsGameOver = true;
+		TakeshiPlayerController->GameOver(EGameOverOutcome::PlayerLoss);
+	}
+}
+
+void ACourseGameModeBase::IncrementCourseTimer()
+{
+	CourseTime++;
+
+	OnCourseTimeChanged.Broadcast(CourseTime);
+
+	if (CourseTime == MaximumCourseDuration)
+	{
+		bIsGameOver = true;
+		TakeshiPlayerController->GameOver(EGameOverOutcome::PlayerLoss);
+	}
+}
+
 void ACourseGameModeBase::PlayerCharacterDestroyed()
 {
-	// Note: Deliberately left empty, overriden in derived classes
+	if (bEnablePlayerLives)
+	{
+		if (!bIsGameOver)
+		{
+			TakeshiPlayerController->DecrementPlayerLives();			
+		}
+	}
+	else
+	{
+		TakeshiPlayerController->GameOver(EGameOverOutcome::PlayerLoss);
+	}
 }
 
 void ACourseGameModeBase::PlayerLivesChanged(int32 NewPlayerLives)
 {
-	// Note: Deliberately left empty, overriden in derived classes
+	if (NewPlayerLives == 0)
+	{
+		bIsGameOver = true;
+		TakeshiPlayerController->GameOver(EGameOverOutcome::PlayerLoss);
+	}
+	else if (NewPlayerLives > 0 && NewPlayerLives < InitialPlayerLives)
+	{
+		RestartPlayer(TakeshiPlayerController);
+	}
 }
 
 void ACourseGameModeBase::PlayerEnteredCourseEndZone()
 {
-	bIsCourseCompleted = true;
+	StopCourseTimer();
+
+	bIsGameOver = true;
 	TakeshiPlayerController->GameOver(EGameOverOutcome::PlayerWin);
 }
 
 void ACourseGameModeBase::PlayerExitedCourseStartZone()
 {
-	// Note: Deliberately left empty, overriden in derived classes
-	UE_LOG(LogTemp, Warning, TEXT("Player exited Start Zone"));
+	if (!GetWorld()->GetTimerManager().IsTimerActive(CourseTimerHandle))
+	{
+		StartCourseTimer();
+	}
 }

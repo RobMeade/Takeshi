@@ -22,7 +22,7 @@ protected:
 
 	virtual void BeginPlay() override;
 	virtual void BindDelegates() override;
-	virtual void PlayerControllerInitialized() override;
+	virtual void PlayerControllerHasBegunPlay() override;
 
 
 private:
