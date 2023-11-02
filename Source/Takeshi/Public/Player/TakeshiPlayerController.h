@@ -79,6 +79,9 @@ public:
 	void InitializePlayerLives(const int32 InPlayerLives);
 	void DecrementPlayerLives() const;
 
+	void SetMovementForSlipperSurface() const;
+	void SetMovementForNormalSurface() const;
+
 	void GameOver(const EGameOverOutcome Outcome);
 
 

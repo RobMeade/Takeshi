@@ -4,6 +4,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
@@ -111,6 +112,24 @@ void ATakeshiPlayerController::Look(const FInputActionValue& InputActionValue)
 	{
 		ControlledPawn->AddControllerYawInput(LookAxisVector.X);
 		ControlledPawn->AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ATakeshiPlayerController::SetMovementForSlipperSurface() const
+{
+	if (TakeshiCharacter && TakeshiCharacter->GetCharacterMovement())
+	{
+		TakeshiCharacter->GetCharacterMovement()->BrakingDecelerationWalking = TakeshiCharacter->GetSlipperyBrakingDecelerationWalking();
+		TakeshiCharacter->GetCharacterMovement()->GroundFriction = TakeshiCharacter->GetSlipperyGroundFriction();
+	}
+}
+
+void ATakeshiPlayerController::SetMovementForNormalSurface() const
+{
+	if (TakeshiCharacter && TakeshiCharacter->GetCharacterMovement())
+	{
+		TakeshiCharacter->GetCharacterMovement()->BrakingDecelerationWalking = TakeshiCharacter->GetDefaultBrakingDecelerationWalking();
+		TakeshiCharacter->GetCharacterMovement()->GroundFriction = TakeshiCharacter->GetDefaultGroundFriction();
 	}
 }
 
