@@ -2,8 +2,12 @@
 
 #include "Game/Courses/SkippingStones/SkippingStone.h"
 
+#include "Components/BillboardComponent.h"
+#include "Components/SceneComponent.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "PropertyEditorModule.h"
 
 #include "Character/TakeshiCharacterBase.h"
 
@@ -11,6 +15,18 @@
 ASkippingStone::ASkippingStone()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	/*	Custom Property Section */
+	static const FName PropertyEditor("PropertyEditor");
+	FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditor);
+
+#define LOCTEXT_NAMESPACE "PropertySection"
+
+	TSharedRef<FPropertySection> Section = PropertyModule.FindOrCreateSection("Object", "Takeshi", LOCTEXT("Takeshi", "Takeshi"));
+	Section->AddCategory("Takeshi");
+
+#undef LOCTEXT_NAMESPACE
+	/*	End Custom Property Section */
 
 	DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>("DefaultSceneRoot");
 	SetRootComponent(DefaultSceneRoot);
@@ -58,6 +74,23 @@ ASkippingStone::ASkippingStone()
 	PhysicsConstraint->SetAngularVelocityTarget(FVector::ZeroVector);
 	PhysicsConstraint->SetAngularVelocityDriveSLERP(true);
 	PhysicsConstraint->SetAngularDriveParams(10.f, 1.f, 0.f);
+
+#if WITH_EDITOR
+
+	DetectionBillboard = CreateEditorOnlyDefaultSubobject<UBillboardComponent>("DetectionBillboard");
+	DetectionBillboard->SetupAttachment(DefaultSceneRoot);
+	DetectionBillboard->SetRelativeLocation(FVector(0.f, 0.f, 200.f));
+	DetectionBillboard->SetUsingAbsoluteScale(true);
+	DetectionBillboard->SetVisibility(false);
+	DetectionBillboard->bHiddenInGame = true;
+	DetectionBillboard->bIsScreenSizeScaled = true;
+
+	if (DetectionInvalidTexture)
+	{
+		DetectionBillboard->Sprite = DetectionInvalidTexture;
+	}
+
+#endif
 }
 
 void ASkippingStone::BeginPlay()
@@ -114,3 +147,61 @@ void ASkippingStone::CharacterInteractionEnd(ATakeshiCharacterBase* InteractingC
 
 	OnCharacterInteractionEnd.Broadcast();
 }
+
+/*	Skipping Stones Pathfinding Validity */
+
+#if WITH_EDITOR
+void ASkippingStone::PostEditMove(bool bFinished)
+{
+	Super::PostEditMove(bFinished);
+
+	if (bFinished)
+	{
+		CheckPathValidity();
+	}
+}
+
+void ASkippingStone::PostEditUndo()
+{
+	Super::PostEditUndo();
+
+	CheckPathValidity();
+}
+
+void ASkippingStone::PostEditUndo(TSharedPtr<ITransactionObjectAnnotation> TransactionAnnotation)
+{
+	Super::PostEditUndo(TransactionAnnotation);
+
+	CheckPathValidity();
+}
+
+void ASkippingStone::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	CheckPathValidity();
+}
+
+void ASkippingStone::CheckPathValidity()
+{
+	CheckStoneValidityForPath();
+}
+
+void ASkippingStone::CheckStoneValidityForPath()
+{
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
+
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	TArray<AActor*> FoundActors;
+	const bool bDetectedSkippingStones = UKismetSystemLibrary::SphereOverlapActors(this, GetActorLocation(), DetectionVolume->GetScaledSphereRadius(), ObjectTypes, ASkippingStone::StaticClass(), ActorsToIgnore, FoundActors);
+
+	if (DetectionBillboard)
+	{
+		DetectionBillboard->SetVisibility(!bDetectedSkippingStones);
+	}
+}
+#endif
