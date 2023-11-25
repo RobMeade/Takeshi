@@ -88,6 +88,26 @@ private:
 	void CheckPathValidity();
 	void CheckStoneValidityForPath();
 
+	void InitializeForPathFinding();
+	void GetZones();
+
+	bool FindPath(AActor* Start, AActor* Goal, TArray<AActor*>& OutPath);
+	AActor* FindLowestCostNode(TArray<AActor*>& OpenSet, AActor* Goal);
+	float CalculateTotalCost(AActor* Node, AActor* Goal);
+	float CalculateHeuristic(AActor* Node, AActor* Goal);
+	TArray<AActor*> ReconstructPath(AActor* Goal);
+	AActor* GetParent(AActor* Node);
+	TArray<AActor*> GetNeighbors(AActor* CurrentNode);
+	TArray<AActor*> GetNearbyActors(AActor* CurrentNode);
+	bool IsValidNeighbor(AActor* CurrentNode, AActor* Neighbor);
+	float CalculateTentativeCost(AActor* CurrentNode, AActor* Neighbor);
+	float CalculateCostToMove(AActor* NodeA, AActor* NodeB);
+	void InitializeCosts(AActor* Start);
+	float GetCost(AActor* Node);
+	void SetCost(AActor* Node, float NewCost);
+	void InitializeParents(AActor* Start);
+	void SetParent(AActor* Node, AActor* Parent);
+
 #endif
 
 	UPROPERTY(EditDefaultsOnly, Category = "Takeshi|SkippingStone|Components")
@@ -110,5 +130,21 @@ private:
 
 	UPROPERTY()
 	float DetectionRadius = 200.f;
+
+#if WITH_EDITORONLY_DATA
+
+	UPROPERTY(VisibleAnywhere, Category = "Takeshi")
+	TMap<AActor*, float> PathingNodeCostMap;
+
+	UPROPERTY(VisibleAnywhere, Category = "Takeshi")
+	TMap<AActor*, AActor*> PathingNodeParentMap;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CourseStartZone;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CourseEndZone;
+
+#endif
 
 };
